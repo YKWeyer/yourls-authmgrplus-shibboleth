@@ -1,0 +1,25 @@
+{
+  "name": "ykweyer/yourls-authmgrplus-shibboleth",
+  "description": "Extends YOURLS AuthMgrPlus plugin to add Shibboleth compatibility",
+  "keywords": [
+    "yourls",
+    "plugin",
+    "shibboleth"
+  ],
+  "type": "yourls-plugin",
+  "license":"GPL-2.0-or-later",
+  "authors": [
+    {
+      "name": "fuero",
+      "homepage": "https://github.com/fuero"
+    },
+    {
+      "name": "YKWeyer",
+      "homepage": "https://github.com/YKWeyer"
+    }
+  ],
+  "require": {
+    "php": ">=7.2",
+    "yourls/composer-installer": "^1.0"
+  }
+}
