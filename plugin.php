@@ -17,6 +17,8 @@ if (!defined('SHIBBOLETH_ENTITLEMENT'))
         define('SHIBBOLETH_ENTITLEMENT', 'entitlement');
 if (!defined('SHIBBOLETH_ENTITLEMENT_REGEX'))
         define('SHIBBOLETH_ENTITLEMENT_REGEX', '/^.*urn:mace:dir:entitlement:yourls.local:.*$/');
+if (!defined('SHIBBOLETH_LOGOUT_URL'))
+        define('SHIBBOLETH_LOGOUT_URL', '/Shibboleth.sso/Logout');
 
 /**
  * Ensure the AuthMgrPlus plugin is installed and active (display an error and deactivate Shibboleth plugin if not)
@@ -65,4 +67,17 @@ function shibboleth_initAssignment(){
             }
         }
     }
+}
+
+/**
+ * Redirect to shibboleth logout URL after logout
+ */
+yourls_add_action('logout', 'shibboleth_logout', 1000);
+function shibboleth_logout()
+{
+    // Perform YOURLS logout
+    yourls_store_cookie(null);
+    // Redirect to Logout URL
+    header("Location: " . SHIBBOLETH_LOGOUT_URL);
+    exit;
 }
