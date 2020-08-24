@@ -20,6 +20,19 @@ if (!defined('SHIBBOLETH_ENTITLEMENT_REGEX'))
 if (!defined('SHIBBOLETH_LOGOUT_URL'))
         define('SHIBBOLETH_LOGOUT_URL', '/Shibboleth.sso/Logout');
 
+/***
+ * Utility functions to get uid and entitlement, even if APACHE prepends `REDIRECT_` to it
+ */
+function shibboleth_get_uid()
+{
+    return $_SERVER[SHIBBOLETH_UID] ?? $_SERVER['REDIRECT_' . SHIBBOLETH_UID];
+}
+
+function shibboleth_get_entitlement()
+{
+    return $_SERVER[SHIBBOLETH_ENTITLEMENT] ?? $_SERVER['REDIRECT_' . SHIBBOLETH_ENTITLEMENT];
+}
+
 /**
  * Ensure the AuthMgrPlus plugin is installed and active (display an error and deactivate Shibboleth plugin if not)
  */
@@ -39,11 +52,12 @@ function shibboleth_check_authMgrPlus()
 yourls_add_filter( 'is_valid_user', 'shibboleth_is_valid_user' );
 function shibboleth_is_valid_user($unfiltered_valid) {
     // Check for attributes set by mod_shib
-    if (isset( $_SERVER[SHIBBOLETH_UID] ) && isset( $_SERVER[SHIBBOLETH_ENTITLEMENT] ) &&
+    if ( ($uid = shibboleth_get_uid())
+        && ($entitlement = shibboleth_get_entitlement())
         // Check if entitlement matches regex
-        preg_match(SHIBBOLETH_ENTITLEMENT_REGEX, $_SERVER[SHIBBOLETH_ENTITLEMENT]))
-    {
-        yourls_set_user( $_SERVER[SHIBBOLETH_UID] );
+        && preg_match(SHIBBOLETH_ENTITLEMENT_REGEX, $entitlement)
+    ) {
+        yourls_set_user($uid);
         return true;
     }
     return $unfiltered_valid;
@@ -57,13 +71,15 @@ function shibboleth_initAssignment(){
     global $amp_role_assignment;
     global $shibboleth_rbac_role_assignment;
 
-    if (isset( $_SERVER[SHIBBOLETH_UID] ) && isset( $_SERVER[SHIBBOLETH_ENTITLEMENT] ) &&
+    if (($uid = shibboleth_get_uid())
+        && ($entitlement = shibboleth_get_entitlement())
         // Check if entitlement matches regex
-        preg_match(SHIBBOLETH_ENTITLEMENT_REGEX, $_SERVER[SHIBBOLETH_ENTITLEMENT])) {
+        && preg_match(SHIBBOLETH_ENTITLEMENT_REGEX, $entitlement)
+    ) {
         // Parse Regex to define AMP Role assignment
         foreach ($shibboleth_rbac_role_assignment as $role => $regex) {
-            if (preg_match($regex, $_SERVER[SHIBBOLETH_ENTITLEMENT])) {
-                $amp_role_assignment[$role][] = $_SERVER[SHIBBOLETH_UID];
+            if (preg_match($regex, $entitlement)) {
+                $amp_role_assignment[$role][] = $uid;
             }
         }
     }
